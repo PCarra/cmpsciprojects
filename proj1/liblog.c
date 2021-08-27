@@ -12,18 +12,16 @@ char *getlog();
 int savelog(char *filename);
 
 int addmsg(const char type, const char *msg){
-	return 0
+	return 0;
 }
 
 void clearlog(){
 }
 
 char *getlog(){
-	return ''
+	return NULL;
 }
 
 int savelog(char *filename){
-	if (filename==NULL)
-		filename='messages.log'
-	return 0
+	return 0;
 }

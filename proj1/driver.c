@@ -1,73 +1,150 @@
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "listlib.h"
+#include <unistd.h>
+#include "liblog.h"
 
-typedef structlist_struct {
-	data_t item;
-	struct list_struct *next;
+char* get_time_str(time_t rawtime);
+
+typedef struct list_struct {
+	data_t data;
+	struct list_struct* next;
 } list_t;
 
-int logmsgs(char *msgfile);
+struct list_struct *head = NULL;
 
+struct tm* get_time(){
+	time_t tm;
+	struct tm * tp = localtime(&tm);
+	return tp;
+}
+
+char* get_time_str(time_t rawtime){
+	struct tm * timeinfo;
+	timeinfo = localtime(&rawtime);
+	char* time_str = asctime(timeinfo);
+	time_str[strlen(time_str) - 1] = '\0';
+	return time_str;
+}
+	
 //appends to its internal list structure a node containing a copy of data
-int addmsg(const char type, const char *msg){
-	list_t *newnode;
+int addmsg(const char type[], const char msg[]){
 	int nodesize;
-
-	nodesize = sizeof(list_t) + strlen(*msg) + 1;
-	if ((newnode = (list_t *) (malloc(nodesize))) == NULL)
-		return -1;
+	nodesize = sizeof(struct list_struct) + strlen(msg) + strlen(type) + 1;
+	struct list_struct* newnode = (struct list_struct*)malloc(nodesize);
 	//calculate timestamp
-	newnode->item.time = *msg.time;
-	newnode->item.type = *msg.type;
-	newnode->item.string = (char *)newnode + sizof(list_t);
-	strcpy(newnode->item.string, *msg.string);
-	newnode->next = NULL;
-	if (headptr == NULL)
-		headptr = newnode;
-	else
-		tailptr->next = newnode;
+	time_t rawtime = time(&rawtime);
+	//add time to data struct
+	newnode->data.time = rawtime;
+	//strcpy(newnode->data.time, time_string);
+	strcpy(newnode->data.type, type);
+	strcpy(newnode->data.msg, msg);
+	//this prints the list in reverse how can I print in proper order
+	newnode->next = head;
+	head = newnode;
         return 0;
 }
 
+
 //releases all the storage that has been allocated for the logged messages and empties the list of logged messages
 void clearlog(){
+	struct list_struct* current = head;
+	struct list_struct* next;
+	while(current!=NULL){
+		next = current->next;
+		free(current);
+		current = next;
+	}
+	head = NULL;
+
 }
 
-//allocates enough space for a string containing the entire log, copies the log into this string, and returns a pointer to the stringg
+//allocates enough space for a string containing the entire log, copies the log into this string, and returns a pointer to the string
 char *getlog(){
-        return NULL;
+	FILE *fp = fopen("messages.log", "rb");
+	fseek(fp, 0, SEEK_END);
+	long fsize = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+
+	char *string = malloc(fsize + 1);
+	fread(string, 1, fsize, fp);
+	fclose(fp);
+	string[fsize]=0;
+        return string;
 }
 
 //saves the logged messsages to a disk file
 int savelog(char *filename){
+	FILE *fp;
+	fp = fopen(filename, "w");
+	struct list_struct *n = NULL;
+	n = (struct list_struct*)malloc(sizeof(struct list_struct));
+	n = head;
+	while (n!=NULL){
+		//use fprintf and format each part of the linked list to a file
+		if(n->next!=NULL){
+			fprintf(fp, "%s: %s: %s", get_time_str(n->data.time), n->data.type, n->data.msg);
+		}
+		n = n->next;
+	}
+	fclose(fp);
         return 0;
 }
 
+void printList(struct list_struct *n){
+      	char time_string[9];
+	while (n!=NULL){
+		printf("%s: %s: %s ", get_time_str(n->data.time), n->data.type, n->data.msg);
+		n = n->next;
+	}
+}
+
 //read messages from msg file and call addmsg to add messages to log list(struct_list)
-int logmsgs(char *msgfile){
-	return 0;
+void readFile(char inputfile[], int timeval){
+	FILE *file = fopen(inputfile, "r");
+        int delay = timeval*2;
+	if(file != NULL){
+		char line[1000];
+		while(fgets(line, sizeof line, file)!=NULL){
+			if(line[0]!='\n'){
+				sleep(delay);
+				//MODIFY THIS TO WORK WITH CSV FILE INSTEAD OF STDIN
+				//USE THE ADDMSG FUNCTION TO ADD MSG TO A LINKED LIST
+				//fprintf(stdout, "%s", line);
+				char* type = strtok(line, ",");
+				char* str = strtok(NULL, ",");
+				char* msg = strtok(str, ",");
+				addmsg(type, msg);
+			}
+		}
+		fclose(file);
+	}
+	else {
+		perror(inputfile);
+	}
+}
+
+void print_usage(){
+	printf("Usage: Use -f to specify a filename, use -t to specify a value for delay");
 }
 
 int main(int argc, char *argv[]){
-	char *filename = 'logfile.txt';
+	char inputfile[20];
 	int timeval;
-	char msgfile;
-	//declare a linked list
 	int opt;
-	while ((opt = getopt(argc, argv, ":if:ht")) != -1){
+	head = (struct list_struct*)malloc(sizeof(struct list_struct));
+
+	while ((opt = getopt(argc, argv, ":f:t:h")) != -1){
 		switch(opt){
 		case 'h':
-			printf("Help function\n");
 			//call help function
+			print_usage();
 			break;
 		case 't':
-			printf("Time in seconds: %s\n", optarg);
-			if(optarg != NULL)
-				timeval = optarg;
-				msgfile = argv[0];
+			timeval = atoi(optarg);
+			break;
+		case 'f':
+			strcpy(inputfile, optarg);
 			break;
 		case ':':
 			printf("Option needs a value!");
@@ -79,18 +156,15 @@ int main(int argc, char *argv[]){
 			break;
 		}
 	}
-	
-	/*
-	//optind is for the extra args which are not parsed in the first loop
-	for(; optind < argc; optind++){
-		//file arguments are where the messages to be logged are stored
-		printf("file arguments: %s\n", argv[optind]);
-		//save msg files to a list of strings
-	}
-	*/
 
-	if(timeval && msgfile!=NULL)
-		//call function to read msgfile and store msgs into linked list
-	
+	if(!inputfile){
+		strcpy(inputfile, "messages.txt");
+	}
+
+	readFile(inputfile, timeval);
+	savelog("messages.log");
+	printf("%s", getlog());
+	clearlog();
+	//printList(head);
 	return 0;
 }

@@ -5,11 +5,11 @@
 # T1: T1.c
 # 	gcc -o T1 T1.c
 
-proj1: driver.c liblog.c
-	gcc -o proj1 driver.c liblog.c
+CC = gcc
+CFLAGS = -Wall
 
-#liblog: liblog.o
-	#ar -rc liblog.a sum.o
+proj1: driver.c liblog.h
+	$(CC) $(CFLAGS) -o driver.c liblog.h
 
 clean:
 	rm -rf *o  proj1 

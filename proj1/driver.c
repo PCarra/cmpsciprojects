@@ -34,14 +34,21 @@ int addmsg(const char type[], const char msg[]){
 	struct list_struct* newnode = (struct list_struct*)malloc(nodesize);
 	//calculate timestamp
 	time_t rawtime = time(&rawtime);
-	//add time to data struct
 	newnode->data.time = rawtime;
-	//strcpy(newnode->data.time, time_string);
 	strcpy(newnode->data.type, type);
 	strcpy(newnode->data.msg, msg);
-	//this prints the list in reverse how can I print in proper order
-	newnode->next = head;
-	head = newnode;
+	//newnode->next = head;
+	//head = newnode;
+	if(head->data.msg[0] == '\0'){
+		head = newnode;
+	}
+	else {
+		struct list_struct* curr = head;
+		while(curr->next!=NULL){
+			curr = curr->next;
+		}
+		curr->next = newnode;
+	}
         return 0;
 }
 
@@ -82,9 +89,7 @@ int savelog(char *filename){
 	n = head;
 	while (n!=NULL){
 		//use fprintf and format each part of the linked list to a file
-		if(n->next!=NULL){
-			fprintf(fp, "%s: %s: %s", get_time_str(n->data.time), n->data.type, n->data.msg);
-		}
+		fprintf(fp, "%s: %s: %s", get_time_str(n->data.time), n->data.type, n->data.msg);
 		n = n->next;
 	}
 	fclose(fp);
@@ -115,6 +120,9 @@ void readFile(char inputfile[], int timeval){
 				char* str = strtok(NULL, ",");
 				char* msg = strtok(str, ",");
 				addmsg(type, msg);
+				if(msg[0] == 'F'){
+					savelog("messages.log");
+				}
 			}
 		}
 		fclose(file);
@@ -162,7 +170,6 @@ int main(int argc, char *argv[]){
 	}
 
 	readFile(inputfile, timeval);
-	savelog("messages.log");
 	printf("%s", getlog());
 	clearlog();
 	//printList(head);

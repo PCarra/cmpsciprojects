@@ -1,3 +1,5 @@
+!<arch>
+liblog.h/       0           0     0     644     216       `
 #include <time.h>
 
 typedef struct data_struct {

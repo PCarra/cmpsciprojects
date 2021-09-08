@@ -25,7 +25,7 @@ struct tm* get_time(){
 //struct list_struct *head = (struct list_struct*)malloc(sizeof(struct list_struct));
 struct list_struct *head = NULL;
 
-int addmsg(const char type[], const char msg[]);
+int addmsg(char* type,char* msg);
 void clearlog();
 char *getlog();
 int savelog(char *filename);
@@ -40,7 +40,8 @@ char* get_time_str(time_t rawtime){
 }
 
 //appends to its internal list structure a node containing a copy of data
-int addmsg(const char type[], const char msg[]){
+int addmsg(char* type, char* msg){
+	//printf("calling add function for %s", type);
         int nodesize;
         nodesize = sizeof(struct list_struct) + strlen(msg) + strlen(type) + 1;
         struct list_struct* newnode = (struct list_struct*)malloc(nodesize);
@@ -93,6 +94,7 @@ char *getlog(){
 
 //saves the logged messsages to a disk file
 int savelog(char *filename){
+	//printf("saving log");
         FILE *fp;
         fp = fopen(filename, "w");
         struct list_struct *n = NULL;
@@ -104,16 +106,9 @@ int savelog(char *filename){
                 n = n->next;
         }
         fclose(fp);
+	printf("%s", getlog());
         return 0;
 }
-/*
-void printList(struct list_struct *n){
-        while (n!=NULL){
-                printf("%s: %s: %s ", get_time_str(n->data.time), n->data.type, n->data.msg);
-                n = n->next;
-        }
-}
-*/
 
 //read messages from msg file and call addmsg to add messages to log list(struct_list)
 void readFile(char inputfile[], int timeval){
@@ -125,20 +120,24 @@ void readFile(char inputfile[], int timeval){
                 while(fgets(line, sizeof line, file)!=NULL){
                         if(line[0]!='\n'){
                                 sleep(delay);
-				//Add error checking for type
                                 char* type = strtok(line, ",");
                                 char* str = strtok(NULL, ",");
                                 char* msg = strtok(str, ",");
-                                addmsg(type, msg);
-                                if(msg[0] == 'F'){
-                                        savelog("messages.log");
-					exit(0);
-                                }
+				if(strcmp(type, "I")==0 || strcmp(type, "W")==0 || strcmp(type, "E")==0 || strcmp(type, "F")==0){
+                                	addmsg(type, msg);
+                                	if(strcmp(type, "F")==0){
+                                        	savelog("messages.log");
+						exit(0);
+                                	}
+				}
+				else{
+					printf("Invalid message type given skipping message");
+				}
                         }
                 }
                 fclose(file);
         }
         else {
-                perror(inputfile);
+                perror("Error opening file for read operation");
         }
 }

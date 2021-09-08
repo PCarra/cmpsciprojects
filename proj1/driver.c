@@ -23,17 +23,16 @@ int main(int argc, char *argv[]){
 			break;
 		case ':':
 			printf("Option needs a value!");
+			print_usage();
 			//call help message
 			break;
 		case '?':
-			printf("Unknown option: %c\n", optopt);
+			perror("Unkown option try again");
+			//printf("Unknown option: %c\n", optopt);
+			print_usage();
 			//call help message
 			break;
 		}
-	}
-
-	if(inputfile[0]=='\0'){
-		strcpy(inputfile, "messages.txt");
 	}
 
 	readFile(inputfile, timeval);

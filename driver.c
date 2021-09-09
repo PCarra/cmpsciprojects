@@ -1,3 +1,8 @@
+#include <time.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 #include "liblog.h"
 
 void print_usage(){

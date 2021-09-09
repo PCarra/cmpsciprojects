@@ -1,0 +1,4 @@
+Thu Sep  9 06:17:10 2021: I:  Exceeded the number of threads 
+Thu Sep  9 06:17:12 2021: W:  Note enough memory to allocate kernel structures
+Thu Sep  9 06:17:14 2021: E:  There was a major error in your code
+Thu Sep  9 06:17:16 2021: F:  Function not supported on this platform

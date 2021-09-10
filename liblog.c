@@ -68,7 +68,7 @@ void clearlog(){
                 current = next;
         }
         head = NULL;
-
+	fclose(fopen("messages.log", "w"));
 }
 
 
@@ -104,11 +104,14 @@ int savelog(char *filename){
         return 0;
 }
 
+
+
 //read messages from msg file and call addmsg to add messages to log list(struct_list)
 void readFile(char inputfile[], int timeval){
 	head = (struct list_struct*)malloc(sizeof(struct list_struct));
         FILE *file = fopen(inputfile, "r");
-        int delay = timeval*2;
+        //int delay = timeval*2;
+	int delay = rand() % (2*timeval + 1 -0);
         if(file != NULL){
                 char line[1000];
                 while(fgets(line, sizeof line, file)!=NULL){
@@ -125,7 +128,7 @@ void readFile(char inputfile[], int timeval){
                                 	}
 				}
 				else{
-					printf("Invalid message type given skipping message");
+					printf("Invalid message type given skipping message\n");
 				}
                         }
                 }

@@ -6,15 +6,20 @@
 #include "liblog.h"
 
 void print_usage(){
-	printf("Usage: Use -f to specify a filename, use -t to specify a value for delay");
+	printf("Use -t to specify a value for delay followed by an input file name.\n");
+	printf("Use -g to print log to screen");
+	printf("Use -c to clear the log");
 }
 
 int main(int argc, char *argv[]){
 	char inputfile[20];
 	int timeval;
 	int opt;
+	int clear_flag=0;
+	int get_flag=0;
 
-	while ((opt = getopt(argc, argv, ":f:t:h")) != -1){
+
+	while ((opt = getopt(argc, argv, ":t:hgc")) != -1){
 		switch(opt){
 		case 'h':
 			//call help function
@@ -23,8 +28,11 @@ int main(int argc, char *argv[]){
 		case 't':
 			timeval = atoi(optarg);
 			break;
-		case 'f':
-			strcpy(inputfile, optarg);
+		case 'g':
+			get_flag=1;
+			break;
+		case 'c':
+			clear_flag=1;
 			break;
 		case ':':
 			printf("Option needs a value!");
@@ -39,10 +47,24 @@ int main(int argc, char *argv[]){
 			break;
 		}
 	}
-
-	readFile(inputfile, timeval);
-	printf("%s", getlog());
-	clearlog();
+	if(argc>4){
+		print_usage();
+		exit(1);
+	}
+	else if(timeval && argc==4){
+		strcpy(inputfile, argv[3]);
+		readFile(inputfile, timeval);
+	}
+	else if(clear_flag){
+		clearlog();
+	}
+	else if(get_flag){
+		printf("%s", getlog());
+	}
+	else{
+		print_usage();
+		exit(1);
+	}
 	//printList(head);
 	return 0;
 }

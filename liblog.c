@@ -129,7 +129,6 @@ void readFile(char inputfile[], int timeval){
 				}
 				else{
 					perror("Invalid message type given skipping messagen");
-					exit(1);
 				}
                         }
                 }
@@ -139,3 +138,4 @@ void readFile(char inputfile[], int timeval){
                 perror("Error opening file for read operation");
         }
 }
+

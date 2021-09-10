@@ -7,7 +7,7 @@
 
 typedef struct data_struct {
 	time_t time;
-	char type[20];
+	char type[2];
 	char msg[100];
 } data_t;
 
@@ -35,26 +35,25 @@ char* get_time_str(time_t rawtime){
 
 //appends to its internal list structure a node containing a copy of data
 int addmsg(char* type, char* msg){
-	//printf("calling add function for %s", type);
         int nodesize;
-        nodesize = sizeof(struct list_struct) + strlen(msg) + strlen(type) + 1;
-        struct list_struct* newnode = (struct list_struct*)malloc(nodesize);
-        //calculate timestamp
-        time_t rawtime = time(&rawtime);
-        newnode->data.time = rawtime;
-        strcpy(newnode->data.type, type);
-        strcpy(newnode->data.msg, msg);
-        if(head->data.msg[0] == '\0'){
-                head = newnode;
-        }
-        else {
-                struct list_struct* curr = head;
-                while(curr->next!=NULL){
-                        curr = curr->next;
-                }
-                curr->next = newnode;
-        }
-        return 0;
+       	nodesize = sizeof(struct list_struct) + strlen(msg) + strlen(type) + 1;
+       	struct list_struct* newnode = (struct list_struct*)malloc(nodesize);
+       	//calculate timestamp
+       	time_t rawtime = time(&rawtime);
+       	newnode->data.time = rawtime;
+       	strcpy(newnode->data.type, type);
+       	strcpy(newnode->data.msg, msg);
+       	if(head->data.msg[0] == '\0'){
+               	head = newnode;
+       	}
+       	else {
+               	struct list_struct* curr = head;
+               	while(curr->next!=NULL){
+                       	curr = curr->next;
+               	}
+               	curr->next = newnode;
+       	}
+       	return 0;
 }
 
 
@@ -121,14 +120,16 @@ void readFile(char inputfile[], int timeval){
                                 char* str = strtok(NULL, ",");
                                 char* msg = strtok(str, ",");
 				if(strcmp(type, "I")==0 || strcmp(type, "W")==0 || strcmp(type, "E")==0 || strcmp(type, "F")==0){
-                                	addmsg(type, msg);
-                                	if(strcmp(type, "F")==0){
-                                        	savelog("messages.log");
+                               		if(strcmp(type, "F")==0){
+        	                       		addmsg(type, msg);
+                                       		savelog("messages.log");
 						exit(0);
-                                	}
+                               		}
+					addmsg(type, msg);
 				}
 				else{
-					printf("Invalid message type given skipping message\n");
+					perror("Invalid message type given skipping messagen");
+					exit(1);
 				}
                         }
                 }

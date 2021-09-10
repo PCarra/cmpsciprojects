@@ -7,12 +7,12 @@
 
 void print_usage(){
 	printf("Use -t to specify a value for delay followed by an input file name.\n");
-	printf("Use -g to print log to screen");
+	printf("Use -g to print log to screen\n");
 	printf("Use -c to clear the log");
 }
 
 int main(int argc, char *argv[]){
-	char inputfile[20];
+	char inputfile[100];
 	int timeval;
 	int opt;
 	int clear_flag=0;
